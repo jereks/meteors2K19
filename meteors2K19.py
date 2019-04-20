@@ -11,16 +11,20 @@ CLOCK = pygame.time.Clock()
 
 class GameObject:
     def __init__(self, path_to_img, width=32, height=45, speed_x=0, speed_y=0, angle=0):
+
+        # we keep the original surface to compensate rotation
+        # lost of image quality
         self.orig_surface = pygame.image.load(path_to_img)
         self.orig_surface = pygame.transform.scale(
-            self.orig_surface, (width, height))
-        self.orig_surface = pygame.transform.rotate(self.orig_surface, angle)
+            self.orig_surface, (width, height)
+        )
+
         self.surface = self.orig_surface.copy()
         self.rect = self.surface.get_rect()
 
+        # setting the initial values
         self.speed_x = speed_x
         self.speed_y = speed_y
-
         self.angle = 0
         self.projection_x = 1
         self.projection_y = 0
@@ -59,6 +63,7 @@ class Rocket(GameObject):
 
             self.angle -= 10
 
+            # perform rotation without loosing image quality
             orig_center = self.rect.center
             self.surface = pygame.transform.rotate(self.surface, -10)
             self.rect = self.surface.get_rect(center=orig_center)
@@ -68,6 +73,7 @@ class Rocket(GameObject):
 
             self.angle += 10
 
+            # perform rotation without loosing image quality
             orig_center = self.rect.center
             self.surface = pygame.transform.rotate(self.surface, 10)
             self.rect = self.surface.get_rect(center=orig_center)
@@ -75,9 +81,9 @@ class Rocket(GameObject):
         if direction == 'up':
             self._accelerate(1)
 
-        # y is inverted
-        self.projection_x = math.cos(self.rads)
-        self.projection_y = -math.sin(self.rads)
+        # y is inverted so we add minus before sin
+        self.projection_x = -math.sin(self.rads)
+        self.projection_y = -math.cos(self.rads)
 
     def update(self):
         print('angle: {}'.format(self.angle))
@@ -90,7 +96,7 @@ class Rocket(GameObject):
         self._perform_move()
 
 
-rocket = Rocket("rocket.png", angle=-90)
+rocket = Rocket("assets/rocket.png", angle=-90)
 
 while True:
 
