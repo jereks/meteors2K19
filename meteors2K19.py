@@ -33,6 +33,13 @@ class GameObject:
         self.surface = self.orig_surface.copy()
         self.rect = self.surface.get_rect()
 
+        self.rect.center = (x, y)
+
+        # perform rotation without loosing image quality
+        orig_center = self.rect.center
+        self.surface = pygame.transform.rotate(self.surface, angle)
+        self.rect = self.surface.get_rect(center=orig_center)
+
         # setting the initial values
         self.speed_x = speed_x
         self.speed_y = speed_y
@@ -106,7 +113,7 @@ class Rocket(GameObject):
         self.projection_y = -math.cos(self.rads)
 
     def fire(self):
-        bullet_speed = 3
+        bullet_speed = 15
 
         bullet = Bullet(
             'assets/bullet.png',
@@ -114,7 +121,9 @@ class Rocket(GameObject):
             height=20,
             speed_x=self.projection_x * bullet_speed + self.speed_x,
             speed_y=self.projection_y * bullet_speed + self.speed_y,
-            angle=self.angle
+            angle=self.angle - 90,
+            x=self.rect.center[0],
+            y=self.rect.center[1]
         )
 
         BULLETS.append(bullet)
