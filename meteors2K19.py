@@ -25,6 +25,7 @@ class GameObject:
 
         # we keep the original surface to compensate rotation
         # lost of image quality
+        print(path_to_img)
         self.orig_surface = pygame.image.load(path_to_img)
         self.orig_surface = pygame.transform.scale(
             self.orig_surface, (width, height)
@@ -61,6 +62,21 @@ class GameObject:
 
 
 class Rocket(GameObject):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.jet = Jet(
+            'assets/jet.png',
+            width=20, height=30,
+            angle=self.angle,
+            x=self.rect.center[0],
+            y=self.rect.bottom
+        )
+        self.is_accelerating = False
+
+    def _perform_move(self):
+        super()._perform_move()
+        self.jet.rect = self.jet.rect.move([self.speed_x, self.speed_y])
 
     def _accelerate(self, val):
         self.speed_x += val * self.projection_x
@@ -109,6 +125,9 @@ class Rocket(GameObject):
         if direction == 'up':
             self._accelerate(1)
 
+            if not self.is_accelerating:
+                self.is_accelerating = True
+
         self.projection_x = -math.sin(self.rads)
         self.projection_y = -math.cos(self.rads)
 
@@ -117,8 +136,7 @@ class Rocket(GameObject):
 
         bullet = Bullet(
             'assets/bullet.png',
-            width=30,
-            height=20,
+            width=30, height=20,
             speed_x=self.projection_x * bullet_speed + self.speed_x,
             speed_y=self.projection_y * bullet_speed + self.speed_y,
             angle=self.angle - 90,
@@ -134,9 +152,18 @@ class Bullet(GameObject):
         pass
 
 
-rocket = Rocket("assets/rocket.png", angle=-90)
+class Jet(GameObject):
+    def exist(self):
+        pass
+
+
+rocket = Rocket('assets/rocket.png', angle=-90)
 
 while True:
+    for event in pygame.event.get():
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP:
+                rocket.is_accelerating = False
 
     keys = pygame.key.get_pressed()
 
@@ -158,6 +185,9 @@ while True:
 
     SCREEN.fill((0, 0, 0))
     SCREEN.blit(rocket.surface, rocket.rect)
+
+    if rocket.is_accelerating:
+        SCREEN.blit(rocket.jet.surface, rocket.jet.rect)
 
     for bullet in BULLETS:
         SCREEN.blit(bullet.surface, bullet.rect)
